@@ -23,36 +23,80 @@ def getGame(choices):
         game = input("Which game would you like to play [%s]: " % ", ".join(choices))
     return game
 
-#Class to handle all card functions
+#Function to get users choice on whether to hit or stand
+def getChoice(choices):
+    choice = ""
+    while choice not in choices:
+        choice = input("Choose whether to hit or stand: [%s]: " % ", ".join(choices))
+    return choice
+
+
+import random
+
+
 class Card(object):
     def __init__(self, suit, val):
         self.suit = suit
         self.value = val
 
+    # Implementing build in methods so that you can print a card object
+    def __unicode__(self):
+        return self.show()
+
+    def __str__(self):
+        return self.show()
+
+    def __repr__(self):
+        return self.show()
+
     def show(self):
-        print("{} of {}".format(self.value, self.suit))
+        if self.value == 1:
+            val = "Ace"
+        elif self.value == 11:
+            val = "Jack"
+        elif self.value == 12:
+            val = "Queen"
+        elif self.value == 13:
+            val = "King"
+        else:
+            val = self.value
+
+        return "{} of {}".format(val, self.suit)
 
 
 class Deck(object):
     def __init__(self):
         self.cards = []
         self.build()
+        self.values = []
 
-    def build(self):
-        for s in ["Spades", "Clubs", "Diamonds", "Hearts"]:
-            for v in range(1, 14):
-                self.cards.append(Card(s, v))
-
+    # Display all cards in the deck
     def show(self):
-        for c in self.cards:
-            c.show()
+        for card in self.cards:
+            print(card.show())
 
-    def shuffle(self):
-        for i in range(len(self.cards) - 1, 0, -1):
-            r = random.randint(0, i)
-            self.cards[i], self.cards[r] = self.cards[r], self.cards[i]
+    # Generate 52 cards
+    def build(self):
+        self.cards = []
+        for suit in ['Hearts', 'Clubs', 'Diamonds', 'Spades']:
+            for val in range(1, 14):
+                self.cards.append(Card(suit, val))
 
-    def drawCard(self):
+    # Shuffle the deck
+    def shuffle(self, num=1):
+        length = len(self.cards)
+        for _ in range(num):
+            # This is the fisher yates shuffle algorithm
+            for i in range(length - 1, 0, -1):
+                randi = random.randint(0, i)
+                if i == randi:
+                    continue
+                self.cards[i], self.cards[randi] = self.cards[randi], self.cards[i]
+            # You can also use the build in shuffle method
+            # random.shuffle(self.cards)
+
+    # Return the top card
+    def deal(self):
         return self.cards.pop()
 
 
@@ -61,13 +105,28 @@ class Player(object):
         self.name = name
         self.hand = []
 
-    def draw(self, deck):
-        self.hand.append(deck.drawCard())
+    # Draw n number of cards from a deck
+    # Returns true in n cards are drawn, false if less then that
+    def draw(self, deck, num=1):
+        for _ in range(num):
+            card = deck.deal()
+            if card:
+                self.hand.append(card)
+            else:
+                return False
+        return True
+
+    # Display all the cards in the players hand
+    def showHand(self):
+        if len(self.hand) < 2:
+            self.hand.append("Flipped Card")
+        else:
+            if "Flipped Card" in self.hand: self.hand.remove("Flipped Card")
+        print("{} hand: {}".format(self.name, self.hand))
         return self
 
-    def showHand(self):
-        for card in self.hand:
-            card.show()
+    def handVals(self):
+        return self.hand
 
 #Prompt the user for how much $ to have for casino game
 status = getStatus(["Low Roller", "High Roller"])
@@ -103,16 +162,29 @@ if game == "Blackjack":
     #deck.show()
 
     #Prints player hand
-    player = Player("Player1")
-    print("\nYour Hand")
-    player.draw(deck).draw(deck)
+    print('\nDealing cards...')
+    myDeck = Deck()
+    myDeck.shuffle()
+    player = Player('Your')
+    player.draw(myDeck, 2)
     player.showHand()
+    x = player.handVals()
+    # print(x[0].value)
+    # print(x[1].value)
 
     #Prints dealers hand
-    dealer = Player("Dealer")
-    print("\nDealer Hand")
-    dealer.draw(deck)
+    dealer = Player("Dealer's")
+    dealer.draw(myDeck, 1)
+    print("\n")
     dealer.showHand()
-    print("Flipped card")
-    dealer.draw(deck)
+    dealer.draw(myDeck, 1)
+    dealer.showHand()
+    x = dealer.handVals()
+    # print(x[0].value)
+
+    #Hit or stand
+    choice = getChoice(["Hit", "Stand"])
+    if choice == stand:
+        pass
+
 
