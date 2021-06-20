@@ -30,10 +30,6 @@ def getChoice(choices):
         choice = input("Choose whether to hit or stand: [%s]: " % ", ".join(choices))
     return choice
 
-
-import random
-
-
 class Card(object):
     def __init__(self, suit, val):
         self.suit = suit
@@ -128,6 +124,19 @@ class Player(object):
     def handVals(self):
         return self.hand
 
+#Function to return the sum of all cards in hand as total
+def getTotal(hand):
+    valList = []
+    total = 0
+    for ele in range(0, len(hand)):
+        if hand[ele].value > 10:
+            valList.append(10)
+        else:
+            valList.append(hand[ele].value)
+        total = sum(valList)
+    return total
+
+
 #Prompt the user for how much $ to have for casino game
 status = getStatus(["Low Roller", "High Roller"])
 if status == "Low Roller":
@@ -168,9 +177,9 @@ if game == "Blackjack":
     player = Player('Your')
     player.draw(myDeck, 2)
     player.showHand()
-    x = player.handVals()
-    # print(x[0].value)
-    # print(x[1].value)
+    pHand = player.handVals()
+    # print(pHand[0].value)
+    # print(pHand[1].value)
 
     #Prints dealers hand
     dealer = Player("Dealer's")
@@ -178,13 +187,52 @@ if game == "Blackjack":
     print("\n")
     dealer.showHand()
     dealer.draw(myDeck, 1)
-    dealer.showHand()
-    x = dealer.handVals()
-    # print(x[0].value)
+    #dealer.showHand()
+    dHand = dealer.handVals()
+    # print(dHand[0].value)
 
     #Hit or stand
-    choice = getChoice(["Hit", "Stand"])
-    if choice == stand:
-        pass
+    while game != "end":
+        choice = getChoice(["Hit", "Stand"])
+        pTotal = getTotal(pHand)
+        if pTotal == 21:
+            print("Blackjack! You won this hand")
+            game = "end"
+
+        elif choice == "Stand":
+            print("\nYou chose to stand. Flipping dealer's face down card")
+            dealer.showHand()
+            dHand = dealer.handVals()
+            dTotal = getTotal(dHand)
+            while dTotal < 17:
+                print("\nDealer drawing another card")
+                dealer.draw(myDeck, 1)
+                dealer.showHand()
+                dTotal = getTotal(dHand)
+            if dTotal > 21:
+                print("\nDealer busted")
+            elif dTotal == 21:
+                print("\nDealer hit Blackjack")
+            elif dTotal > pTotal:
+                print("\nDealer wins")
+            elif dTotal == pTotal:
+                print("\nPush")
+            else:
+                print("You win!")
+            game = "end"
+
+        elif choice == "Hit":
+            print("\nDealing card")
+            player.draw(myDeck, 1)
+            player.showHand()
+            pTotal = getTotal(pHand)
+            if pTotal > 21:
+                print("You busted")
+                game = "end"
+            elif pTotal == 21:
+                print("Blackjack! You won this hand")
+                game = "end"
+
+
 
 
